@@ -1,0 +1,17 @@
+[kem-$tenant-databucket]
+type = s3
+provider = Ceph
+env_auth = false
+access_key_id = $databucket_access_key_id
+secret_access_key = $databucket_secret_access_key
+endpoint = $s3_endpoint
+acl = private
+
+[kem-$tenant-controlbucket]
+type = s3
+provider = Ceph
+env_auth = false
+access_key_id = $controlbucket_access_key_id
+secret_access_key = $controlbucket_secret_access_key
+endpoint = $s3_endpoint
+acl = private

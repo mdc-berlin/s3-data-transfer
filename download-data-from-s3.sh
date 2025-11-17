@@ -1,0 +1,48 @@
+#!/bin/bash
+# status: created -> uploading -> uploaded -> downloading -> downloaded
+
+if [ ! $1 ]
+then
+  echo "no config specified"
+  echo "use: $0 /path/to/config.cfg"
+  exit
+fi
+
+if [ ! $(which rclone) ]
+then
+  echo "please install rclone"
+  exit
+fi
+
+# load config
+set -a
+source $1
+set +a
+
+# create temporary folder
+mkdir -p $temppath/workflow-progress-download/controldata 2> /dev/null
+
+# create rclone config folder
+mkdir -p ~/.config/rclone 2> /dev/null
+
+# place config
+envsubst < rclone.config.sample > ~/.config/rclone/rclone.conf
+
+controlbucket="kem-$tenant-controlbucket"
+databucket="kem-$tenant-databucket"
+
+rclone sync --checksum  $controlbucket:$controlbucket/ $temppath/workflow-progress-download/controldata
+
+for controldatafile in $(find $temppath/workflow-progress-download/controldata -type f)
+do
+  echo $controldatafile
+  datasethash=$(basename $controldatafile)
+  if ! grep -q "downloaded" "$controldatafile"; then
+    echo "downloading ..."
+    echo rclone sync --transfers=32 --check-first --fast-list --checksum --progress $databucket:$databucket/$datasethash $temppath/workflow-progress-download/$datasethash
+    echo "downloaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $controldatafile
+    echo rclone sync --checksum  $controldatafile $controlbucket:$controlbucket/
+  else
+    echo "dataset already downloaded"
+  fi
+done

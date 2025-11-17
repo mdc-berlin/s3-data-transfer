@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# who are you
+tenant=someone
+
+# where do we want to search for the marker file (for upload)
+sourcepath=/mnt/source/path
+
+# where do we want to save the data (for download)
+destinationpath=/mnt/destination/path
+
+# how deep do we want to scan for the marker file
+maxdepth=5
+
+# whats the marker file called?
+marker=workflow-progress.txt
+
+# where do we save temporary date (does not need to be hugh in size)
+temppath=/tmp
+
+# s3 options
+s3_endpoint = your.s3.endpoint
+
+# databucket
+databucket_access_key_id = XXXX1
+databucket_secret_access_key = YYYYY1
+
+# controlbucket
+controlbucket_access_key_id = XXXX2
+controlbucket_secret_access_key = YYYYY2
