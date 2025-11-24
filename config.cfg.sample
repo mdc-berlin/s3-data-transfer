@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# who are you
+# who is uploading
+producer=kem
+
+# who is downloading
 tenant=someone
 
 # where do we want to search for the marker file (for upload)

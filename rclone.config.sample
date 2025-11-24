@@ -1,4 +1,4 @@
-[kem-$tenant-databucket]
+[$producer-$tenant-databucket]
 type = s3
 provider = Ceph
 env_auth = false
@@ -7,7 +7,7 @@ secret_access_key = $databucket_secret_access_key
 endpoint = $s3_endpoint
 acl = private
 
-[kem-$tenant-controlbucket]
+[$producer-$tenant-controlbucket]
 type = s3
 provider = Ceph
 env_auth = false
