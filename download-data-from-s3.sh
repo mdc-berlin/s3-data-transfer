@@ -1,5 +1,6 @@
 #!/bin/bash
 # status: created -> uploading -> uploaded -> downloading -> downloaded
+# version: 1.0
 
 if [ ! $1 ]
 then
@@ -28,8 +29,8 @@ mkdir -p ~/.config/rclone 2> /dev/null
 # place config
 envsubst < rclone.config.sample > ~/.config/rclone/rclone.conf
 
-controlbucket="kem-$tenant-controlbucket"
-databucket="kem-$tenant-databucket"
+controlbucket="$producer-$tenant-controlbucket"
+databucket="$producer-$tenant-databucket"
 
 rclone sync --checksum  $controlbucket:$controlbucket/ $temppath/workflow-progress-download/controldata
 
@@ -39,9 +40,14 @@ do
   datasethash=$(basename $controldatafile)
   if ! grep -q "downloaded" "$controldatafile"; then
     echo "downloading ..."
-    echo rclone sync --transfers=32 --check-first --fast-list --checksum --progress $databucket:$databucket/$datasethash $temppath/workflow-progress-download/$datasethash
-    echo "downloaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $controldatafile
-    echo rclone sync --checksum  $controldatafile $controlbucket:$controlbucket/
+    rclone sync --transfers=32 --check-first --fast-list --checksum --progress $databucket:$databucket/$datasethash $destinationpath/$datasethash
+    if [ $? -eq 0 ]
+    then
+      echo "downloaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $controldatafile
+      rclone sync --checksum  $controldatafile $controlbucket:$controlbucket/
+    else
+      echo "something failed ... retrying next time"
+    fi
   else
     echo "dataset already downloaded"
   fi

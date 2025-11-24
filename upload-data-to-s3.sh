@@ -1,5 +1,6 @@
 #!/bin/bash
 # status: created -> uploading -> uploaded -> downloading -> downloaded
+# version: 1.0
 
 if [ ! $1 ]
 then
@@ -34,8 +35,8 @@ do
   # setting variables
   dataset=$(dirname $workflowfile)
   datasethash=($(echo $dataset | md5sum))
-  databucket="kem-$tenant-databucket"
-  controlbucket="kem-$tenant-controlbucket"
+  databucket="$producer-$tenant-databucket"
+  controlbucket="$producer-$tenant-controlbucket"
   echo $workflowfile
   du -sh $(dirname $workflowfile)
 
@@ -56,37 +57,45 @@ do
     
     # uploading
     echo "uploading ..."
-    #echo rclone sync --transfers=32 --check-first --fast-list --checksum --progress $dataset $databucket:$databucket/$datasethash
-    echo "uploaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $workflowfile
+    rclone sync --transfers=32 --check-first --fast-list --checksum --progress $dataset $databucket:$databucket/$datasethash
+    if [ $? -eq 0 ]
+    then
+      echo "uploaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $workflowfile
 
-    # notify via controlbucket
-    echo "$dataset" > $temppath/workflow-progress-temp/$datasethash
-    echo "uploaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $temppath/workflow-progress-temp/$datasethash
-    #echo rclone sync --checksum  $temppath/workflow-progress-temp/$datasethash $controlbucket:$controlbucket/
+      # notify via controlbucket
+      echo "$dataset" > $temppath/workflow-progress-temp/$datasethash
+      echo "uploaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $temppath/workflow-progress-temp/$datasethash
+      rclone sync --checksum  $temppath/workflow-progress-temp/$datasethash $controlbucket:$controlbucket/
+    else
+      echo "something failed ... retrying next time"
+    fi
   else
     echo "dataset already uploaded -> skipping"
   fi
 
   # workflow-progress.txt update -> downloaded
-  if rclone cat $controlbucket:$controlbucket/$datasethash | grep -q downloaded; then
-    echo "dataset has been downloaded by $tenant ..."
-    echo "downloaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $workflowfile
-  else
-    echo "dataset has not been downloaded by $tenant yet ..."
+  if rclone cat $controlbucket:$controlbucket/$datasethash | grep -q .; then
+    if rclone cat $controlbucket:$controlbucket/$datasethash | grep -q downloaded; then
+      echo "dataset has been downloaded by $tenant ..."
+      echo "downloaded=$(date +%Y-%m-%d-%H:%M:%S)" >> $workflowfile
+    else
+      echo "dataset has not been downloaded by $tenant yet ..."
+    fi
   fi
 
   # workflow-progress.txt update -> deleted
   if grep -q "downloaded" "$workflowfile"; then
     if ! grep -q "deleted" "$workflowfile"; then
       echo "deleting files from databucket"
-      echo rclone delete $databucket:$databucket/$datasethash
+      rclone delete $databucket:$databucket/$datasethash
       echo "deleting files from controlbucket"
-      echo rclone delete $controlbucket:$controlbucket/$datasethash
+      rclone delete $controlbucket:$controlbucket/$datasethash
       echo "deleted=$(date +%Y-%m-%d-%H:%M:%S)" >> $workflowfile
     else
       echo "deleted timestamp found -> skipping"
     fi
   fi
 
+  echo ""
 done
   
