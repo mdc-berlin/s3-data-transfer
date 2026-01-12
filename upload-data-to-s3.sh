@@ -1,6 +1,6 @@
 #!/bin/bash
 # status: created -> uploading -> uploaded -> downloading -> downloaded
-# version: 1.0
+# version: 1.1
 
 if [ ! $1 ]
 then
