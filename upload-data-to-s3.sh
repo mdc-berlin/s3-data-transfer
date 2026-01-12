@@ -15,6 +15,16 @@ then
   exit
 fi
 
+pidfile=/var/run/upload-data-to-s3
+if [ -f $pidfile ]
+then
+  pid=$(cat $pidfile)
+  echo "another upload process is already running (pid: $pid)"
+  exit
+else
+  echo $$ > $pidfile
+fi
+
 # load config
 set -a
 source $1
@@ -98,4 +108,5 @@ do
 
   echo ""
 done
-  
+
+rm -f $pidfile

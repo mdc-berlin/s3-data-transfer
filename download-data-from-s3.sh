@@ -15,6 +15,16 @@ then
   exit
 fi
 
+pidfile=/var/run/download-data-from-s3
+if [ -f $pidfile ]
+then
+  pid=$(cat $pidfile)
+  echo "another download process is already running"
+  exit
+else
+  echo $$ > $pidfile
+fi
+
 # load config
 set -a
 source $1
@@ -52,3 +62,5 @@ do
     echo "dataset already downloaded"
   fi
 done
+
+rm -f $pidfile
