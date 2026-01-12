@@ -13,6 +13,7 @@ The repository contains two main shell scripts and two configuration templates:
 |------|--------------|
 | `upload-data-to-s3.sh` | Uploads data directories from a source platform to an S3 data bucket and logs metadata into a control bucket. |
 | `download-data-from-s3.sh` | Downloads available datasets from the data bucket by reading control information, and notifies completion back to the uploader. |
+| `connection-test.sh` | Tests your credentials to both buckets and its permissions (read, write, list). |
 | `config.cfg.sample` | Example environment configuration defining paths, tenant IDs, and runtime variables. |
 | `rclone.config.sample` | Example configuration for `rclone`, used to authenticate with S3-compatible endpoints. |
 
